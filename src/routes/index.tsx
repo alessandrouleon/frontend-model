@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { DefaultLayout } from "../layouts/defaultLayout";
-// import { NotFound } from "../pages/notFound";
 import { Login } from "../page/login";
+import { NotFound } from "../page/notFound";
 import { APP_PAGES } from "./pages.routes";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -16,7 +16,7 @@ export function AppRoutes() {
           ))}
         </Route>
       </Route>
-      {/* <Route path="*" element={<NotFound />} /> */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
