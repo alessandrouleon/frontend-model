@@ -1,3 +1,4 @@
+import { ptBR } from '@mui/material/locale';
 import { createTheme } from '@mui/material/styles';
 import { COLORS } from './colors';
 
@@ -16,4 +17,5 @@ export const LightTheme = createTheme({
       paper: COLORS.BACKGROUND_BASE,
     },
   },
-});
+  
+}, ptBR);

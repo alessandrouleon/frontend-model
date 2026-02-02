@@ -1,7 +1,7 @@
- import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
+ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import SpaceDashboardIcon from "@mui/icons-material/SpaceDashboard";
 import { Dashboards } from "../page/dashboards";
-// import { ServiceOrder } from "../pages/serviceOrder";
-
+import { Users } from "../page/users";
 
 export const APP_PAGES = [
    {
@@ -11,19 +11,13 @@ export const APP_PAGES = [
     component: <Dashboards />,
     showMenu: true,
   },
-  //  {
-  //   title: "Ordens de Serviço",
-  //   route: "/serviceOrders",
-  //   icon: <SpaceDashboardIcon />,
-  //   component: <ServiceOrder />,
-  //   showMenu: true,
-  // },
-  // {
-  //   title: "Usuários",
-  //   route: "/users",
-  //   icon: <GroupIcon />,
-  //   component: <Users />,
-  //   showMenu: true,
-  // },
+
+  {
+    title: "Usuários",
+    route: "/users",
+    icon: <PeopleAltIcon />,
+    component: <Users />,
+    showMenu: true,
+  },
   
 ];

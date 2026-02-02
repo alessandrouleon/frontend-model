@@ -1,5 +1,5 @@
 import api from "../api";
-import { UserToken } from "../localStorage";
+// import { UserToken } from "../localStorage";
 import type {
   ICreateUsersProps,
   IUpdateUsersProps,
@@ -27,28 +27,28 @@ export const deleteUser = async (id: string) => {
   return await api.delete(`/users/${id}`);
 };
 
-export const findManyUsers = async (page: number) => {
-  return await api.get(`/users/search/${page}`);
+export const findManyUsers = async (page: number, size: number) => {
+  return await api.get(`/users?page=${page}&size=${size}`);
 };
 
-export const searchForUsers = async (page: number, value: string) => {
-  return await api.get(`/users/search/${page}?value=${value}`);
-};
+// export const searchForUsers = async (page: number, value: string) => {
+//   return await api.get(`/users/search/${page}?value=${value}`);
+// };
 
-export const findAllUsersNotPaginated = async () => {
-  return await api.get(`/users/allUsers`);
-};
+// export const findAllUsersNotPaginated = async () => {
+//   return await api.get(`/users/allUsers`);
+// };
 
-export async function uploadUsers(file: File) {
-  const formData = new FormData();
-  formData.append("file", file);
+// export async function uploadUsers(file: File) {
+//   const formData = new FormData();
+//   formData.append("file", file);
 
-  const token = UserToken.getLocalStorageToken();
+//   const token = UserToken.getLocalStorageToken();
 
-  return await api.post("/users/upload/file", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
+//   return await api.post("/users/upload/file", formData, {
+//     headers: {
+//       "Content-Type": "multipart/form-data",
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
+// }

@@ -26,7 +26,6 @@ export function AppContainer({ children }: AppContainerProps) {
   const [open, setOpen] = React.useState(true);
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  // const data: string | null = UserToken.getLocalStorageToken();
   const username: string | null = UserToken.getLocalStorageName();
 
 

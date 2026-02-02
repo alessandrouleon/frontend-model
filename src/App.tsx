@@ -1,5 +1,5 @@
+import { ThemeProvider } from '@mui/material/styles'
 import { BrowserRouter } from 'react-router'
-import { ThemeProvider } from 'styled-components'
 import { AuthProvider } from './contexts/AuthProvider'
 import { AppRoutes } from './routes'
 import { LightTheme } from './themes'
