@@ -1,20 +1,51 @@
 import AddIcon from "@mui/icons-material/Add";
+import CleaningServicesIcon from "@mui/icons-material/CleaningServices";
 import {
   Button,
   Grid,
-  Typography
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
 } from "@mui/material";
+import React, { useCallback, useEffect } from "react";
 import { COLORS } from "../../themes/colors";
 
 interface HeaderProps {
   titleModule: string;
+  onSearch: (searchValue: string) => void;
   handleSave: () => void;
 }
 
-export function Toolbar({
-  titleModule,
-  handleSave,
-}: HeaderProps) {
+export function Toolbar({ titleModule, onSearch, handleSave }: HeaderProps) {
+  const [searchValue, setSearchValue] = React.useState("");
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchValue(value);
+    onSearch(value);
+  };
+
+  const handleClearSearch = useCallback(() => {
+    setSearchValue("");
+    onSearch("");
+  }, [onSearch]);
+
+  useEffect(() => {
+    if (searchValue === "") {
+      handleClearSearch();
+    }
+  }, [searchValue, handleClearSearch]);
+
+  const clearSearchButton = (
+    <IconButton
+      edge="end"
+      onClick={handleClearSearch}
+      disabled={searchValue.trim().length === 0}
+    >
+      <CleaningServicesIcon />
+    </IconButton>
+  );
 
   return (
     <>
@@ -27,8 +58,29 @@ export function Toolbar({
         >
           {titleModule}
         </Typography>
-        
-        <Grid  style={{ textAlign: "right" }}>
+
+        <Grid size={{ xs: 12, md: 9 }} style={{ textAlign: "right" }}>
+          <TextField
+            size="small"
+            variant="outlined"
+            placeholder="Pesquisar..."
+            sx={{
+              "& .MuiOutlinedInput-root": { borderRadius: "6rem" },
+              minWidth: { xs: "100%", md: "100%" },
+            }}
+            value={searchValue}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end" sx={{ pr: 1 }}>
+                  {clearSearchButton}
+                </InputAdornment>
+              ),
+            }}
+            onChange={handleSearch}
+          />
+        </Grid>
+
+        <Grid style={{ textAlign: "right" }}>
           <Button
             variant="outlined"
             onClick={handleSave}
@@ -36,7 +88,6 @@ export function Toolbar({
               marginLeft: "0.5rem",
               padding: 0,
               borderRadius: 50,
-              
             }}
           >
             <AddIcon fontSize="large" />

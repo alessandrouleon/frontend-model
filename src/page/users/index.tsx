@@ -1,6 +1,6 @@
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
-import { Grid, IconButton } from "@mui/material";
+import { debounce, Grid, IconButton } from "@mui/material";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -8,21 +8,16 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert } from "../../components/alert";
 import { InitialAlertProps } from "../../components/alert/interfaces";
 import { Loader } from "../../components/loader";
 import { Toolbar } from "../../components/toolbar";
 import { useAuth } from "../../contexts/hooks/useAuth";
-import {
-  findManyUsers
-} from "../../services/users";
+import { findManyUsers } from "../../services/users";
 import { COLORS } from "../../themes/colors";
 import type { IFormUpdateUsers } from "./interfaces";
-import {
-  initialStateData,
-  initialUsersUpdate
-} from "./interfaces";
+import { initialStateData, initialUsersUpdate } from "./interfaces";
 import { CreateModal } from "./modal/createModal";
 import { DeleteModal } from "./modal/deleteModal";
 import { UpdateModal } from "./modal/updateModal";
@@ -39,70 +34,70 @@ export function Users() {
   const [openUpdate, setOpenUpdate] = useState(false);
 
   const [openDelete, setOpenDelete] = useState(false);
-  // const [searchValue, setSearchValue] = useState("");
-  // const [selectedRow, setSelectedRow] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
-    const { hasRole, roles } = useAuth();
-
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
+  const { hasRole } = useAuth();
 
   const handleOpen = () => setOpen(!open);
+
+  const handleSearch = (value: string) => {
+    handleSearchMeno(value);
+  };
+
+  const handleChangePage = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
 
   const handleUpdate = (item: IFormUpdateUsers) => {
     setUser(item);
     setOpenUpdate(!openUpdate);
-    // setSelectedRow(item.id);
   };
 
-
-    const handleOpenDelete = (item: IFormUpdateUsers) => {
+  const handleOpenDelete = (item: IFormUpdateUsers) => {
     setUser(item);
     setOpenDelete(!openDelete);
-    // setSelectedRow(item.id);
   };
 
-
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
 
-  const fetchData = useCallback(
-    async () => {
-      setLoading(true);
-      try {
-        const response = await findManyUsers(page + 1, rowsPerPage);
-        const { result, pagination } = response.data;
+  //Função usada no seach
+  const handleSearchMeno = useMemo(
+    () =>
+      debounce((value: string) => {
+        setSearchValue(value);
+      }, 500),
+    [setSearchValue],
+  );
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await findManyUsers(
+          page + 1,
+          rowsPerPage,
+          searchValue,
+        );
+        const { result, pagination } = response.data;
         setData({
           users: result,
           total: pagination.total,
           currentPage: pagination.currentPage,
           totlaPages: pagination.totalPages,
         });
-
-        setDataRefresh(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
-    },
-    [page]
-  );
+    };
 
-
-  useEffect(() => {
     fetchData();
-    // if (searchValue === "") {
-    //   fetchData();
-    // }
-    // setSelectedRow(null);
-  }, [page, dataRefresh, roles]);
+  }, [page, rowsPerPage, searchValue, dataRefresh]);
 
   return (
     <>
@@ -161,6 +156,7 @@ export function Users() {
         <>
           <Toolbar
             titleModule="Usuários"
+            onSearch={handleSearch}
             handleSave={handleOpen}
           />
           <TableContainer>
@@ -189,13 +185,15 @@ export function Users() {
                       role="checkbox"
                       tabIndex={-1}
                       key={user.id}
-                       sx={{
+                      sx={{
                         opacity: user.isActive ? 1 : 0.4,
-                        backgroundColor: !user.isActive ? COLORS.NEUTRAL_50 : "inherit",
+                        backgroundColor: !user.isActive
+                          ? COLORS.NEUTRAL_50
+                          : "inherit",
                       }}
                     >
                       {columns.map((column) => {
-                         const value = user[column.id];
+                        const value = user[column.id];
                         return (
                           <TableCell
                             key={column.id}
@@ -215,7 +213,9 @@ export function Users() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handleUpdate(user)}
-                                     disabled={!hasRole("ADMIN") && !user.isActive}
+                                    disabled={
+                                      !hasRole("ADMIN") && !user.isActive
+                                    }
                                   >
                                     <EditIcon />
                                   </IconButton>
@@ -224,7 +224,7 @@ export function Users() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handleOpenDelete(user)}
-                                     disabled={!hasRole("ADMIN")}
+                                    disabled={!hasRole("ADMIN")}
                                   >
                                     <DeleteOutlineIcon />
                                   </IconButton>
