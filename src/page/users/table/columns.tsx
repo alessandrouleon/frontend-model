@@ -1,5 +1,6 @@
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import ToggleOffIcon from "@mui/icons-material/ToggleOff";
+import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import Tooltip from "@mui/material/Tooltip";
 import { COLORS } from "../../../themes/colors";
 import { formatTime } from "../../../utils/date";
 import type { IUsersProps } from "../interfaces";
@@ -22,7 +23,7 @@ interface Column {
 }
 
 export const columns: readonly Column[] = [
-    {
+  {
     id: "name",
     label: "Nome",
     minWidth: 30,
@@ -53,9 +54,13 @@ export const columns: readonly Column[] = [
     align: "center",
     renderCell: (params) => {
       return params.row.isActive === true ? (
-        <ToggleOnIcon style={{ color: COLORS.SUCCESS_A700 }} />
+        <Tooltip title="Activo">
+          <ToggleOnIcon style={{ color: COLORS.SUCCESS_A700 }} />
+        </Tooltip>
       ) : (
-        <ToggleOffIcon style={{ color: COLORS.NEUTRAL_400 }} />
+        <Tooltip title="Inativo">
+          <ToggleOffIcon style={{ color: COLORS.NEUTRAL_400 }} />
+        </Tooltip>
       );
     },
   },
