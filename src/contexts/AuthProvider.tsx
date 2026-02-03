@@ -1,7 +1,10 @@
+import { jwtDecode } from "jwt-decode";
 import type { ReactNode } from "react";
 import { createContext, useEffect, useState } from "react";
 import { api } from "../services/api";
+import { UserToken } from "../services/localStorage";
 import { signOut } from "./Auth";
+import { ROLES, type Roles } from "./hooks/enums/roles.enums";
 
 export interface AuthContextData {
   signed: boolean;
@@ -10,6 +13,7 @@ export interface AuthContextData {
   roles: string[];
   hasRole: (role: string) => boolean;
   isAdmin: () => boolean;
+  signIn: (token: string) => void;
   signOut: () => void;
 }
 
@@ -19,13 +23,12 @@ interface JwtPayload {
   exp: number;
 }
 
-
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthContext = createContext<AuthContextData>(
-  {} as AuthContextData
+  {} as AuthContextData,
 );
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -33,30 +36,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const storaged = localStorage.getItem("@auth:api");
-  
-  useEffect(() => {
-    if (storaged) {
-      const [, payload] = storaged.split(".");
-      const decoded = JSON.parse(atob(payload)) as JwtPayload;
-      
-      const timeNow = new Date().getTime();
+  const loadUserFromToken = (token: string): boolean => {
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
 
-      if (decoded && decoded.exp * 1000 > timeNow) {
-        api.defaults.headers.Authorization = `Bearer ${storaged}`;
+      if (decoded.exp * 1000 > new Date().getTime()) {
+        api.defaults.headers.Authorization = `Bearer ${token}`;
         setUser(decoded.username);
         setRoles(decoded.roles ?? []);
+
+        UserToken.setLocalStorageName(decoded.username);
+        return true;
       } else {
         signOut();
         localStorage.clear();
+        return false;
       }
+    } catch (error) {
+      console.error("Erro ao decodificar token:", error);
+      signOut();
+      localStorage.clear();
+      return false;
     }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("@auth:api");
+
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    loadUserFromToken(token);
     setLoading(false);
   }, []);
 
-  const hasRole = (role: string) => roles.includes(role);
-  const isAdmin = () => roles.includes("ADMIN");
-  
+  const handleSignIn = (token: string) => {
+    localStorage.setItem("@auth:api", token);
+    loadUserFromToken(token);
+  };
+
+  const hasRole = (role: Roles) => roles.includes(role);
+  const isAdmin = () => hasRole(ROLES.ADMIN);
 
   return (
     <AuthContext.Provider
@@ -67,6 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         roles,
         hasRole,
         isAdmin,
+        signIn: handleSignIn,
         signOut,
       }}
     >

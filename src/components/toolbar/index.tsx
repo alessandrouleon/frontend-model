@@ -9,6 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback, useEffect } from "react";
+import { ROLES } from "../../contexts/hooks/enums/roles.enums";
+import { useAuth } from "../../contexts/hooks/useAuth";
 import { COLORS } from "../../themes/colors";
 
 interface HeaderProps {
@@ -19,6 +21,7 @@ interface HeaderProps {
 
 export function Toolbar({ titleModule, onSearch, handleSave }: HeaderProps) {
   const [searchValue, setSearchValue] = React.useState("");
+  const { hasRole } = useAuth();
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -35,7 +38,7 @@ export function Toolbar({ titleModule, onSearch, handleSave }: HeaderProps) {
     if (searchValue === "") {
       handleClearSearch();
     }
-  }, [searchValue, handleClearSearch]);
+  }, [searchValue, handleClearSearch, hasRole]);
 
   const clearSearchButton = (
     <IconButton
@@ -84,6 +87,7 @@ export function Toolbar({ titleModule, onSearch, handleSave }: HeaderProps) {
           <Button
             variant="outlined"
             onClick={handleSave}
+            disabled={!hasRole(ROLES.ADMIN)}
             sx={{
               marginLeft: "0.5rem",
               padding: 0,

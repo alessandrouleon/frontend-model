@@ -9,7 +9,7 @@ import {
   InputAdornment,
   Stack,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 
@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "../../components/alert";
 import { InitialAlertProps } from "../../components/alert/interfaces";
-import { UserToken } from "../../services/localStorage";
+import { useAuth } from "../../contexts/hooks/useAuth";
 import { login } from "../../services/login";
 import { COLORS } from "../../themes/colors";
 
@@ -32,6 +32,7 @@ interface FormTextFieldProps {
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [alert, setAlert] = useState(InitialAlertProps);
+  const { signIn } = useAuth();
 
   const navigate = useNavigate();
 
@@ -49,12 +50,10 @@ export function Login() {
   const onSubmit: SubmitHandler<FormTextFieldProps> = async (data) => {
     try {
       const response = await login(data);
-      const [, payload] = response.data.access_token.split(".");
-      const decoded = JSON.parse(atob(payload));
+      const token = response.data.access_token;
 
-      if (response.data.access_token && response.data.access_token.length !== 0) {
-        UserToken.setLocalStorageToken(response.data.access_token);
-        UserToken.setLocalStorageName(decoded.username);
+      if (token && token.length !== 0) {
+        signIn(token);
         navigate("/dashBoard");
       } else {
         setAlert({
@@ -74,11 +73,10 @@ export function Login() {
       }
     }
   };
-
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
   };
@@ -122,7 +120,6 @@ export function Login() {
             }}
             width="100%"
           >
-           
             <Typography
               variant="h5"
               fontWeight={500}
@@ -174,13 +171,13 @@ export function Login() {
                     errors?.username ? errors?.username.message : null
                   }
                   sx={{
-                    '& .MuiInputBase-root': {
+                    "& .MuiInputBase-root": {
                       fontSize: { xs: "0.875rem", sm: "0.9375rem", md: "1rem" },
                     },
-                    '& .MuiInputLabel-root': {
+                    "& .MuiInputLabel-root": {
                       fontSize: { xs: "0.875rem", sm: "0.9375rem", md: "1rem" },
                     },
-                    '& .MuiFormHelperText-root': {
+                    "& .MuiFormHelperText-root": {
                       fontSize: { xs: "0.75rem", sm: "0.8125rem" },
                     },
                   }}
@@ -202,7 +199,7 @@ export function Login() {
                           onMouseDown={handleMouseDownPassword}
                           edge="end"
                           sx={{
-                            '& .MuiSvgIcon-root': {
+                            "& .MuiSvgIcon-root": {
                               fontSize: { xs: "1.25rem", sm: "1.5rem" },
                             },
                           }}
@@ -231,13 +228,13 @@ export function Login() {
                     errors?.password ? errors?.password.message : null
                   }
                   sx={{
-                    '& .MuiInputBase-root': {
+                    "& .MuiInputBase-root": {
                       fontSize: { xs: "0.875rem", sm: "0.9375rem", md: "1rem" },
                     },
-                    '& .MuiInputLabel-root': {
+                    "& .MuiInputLabel-root": {
                       fontSize: { xs: "0.875rem", sm: "0.9375rem", md: "1rem" },
                     },
-                    '& .MuiFormHelperText-root': {
+                    "& .MuiFormHelperText-root": {
                       fontSize: { xs: "0.75rem", sm: "0.8125rem" },
                     },
                   }}
@@ -252,7 +249,7 @@ export function Login() {
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: { xs: "0.875rem", sm: "0.9375rem", md: "0.7rem" },
-                    gap: { xs: 0.5, sm: 1, md: 0.5},
+                    gap: { xs: 0.5, sm: 1, md: 0.5 },
                   }}
                 >
                   Acessar

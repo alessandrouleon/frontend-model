@@ -13,6 +13,7 @@ import { Alert } from "../../components/alert";
 import { InitialAlertProps } from "../../components/alert/interfaces";
 import { Loader } from "../../components/loader";
 import { Toolbar } from "../../components/toolbar";
+import { ROLES } from "../../contexts/hooks/enums/roles.enums";
 import { useAuth } from "../../contexts/hooks/useAuth";
 import { findManyUsers } from "../../services/users";
 import { COLORS } from "../../themes/colors";
@@ -35,7 +36,7 @@ export function Users() {
 
   const [openDelete, setOpenDelete] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { hasRole } = useAuth();
 
   const handleOpen = () => setOpen(!open);
@@ -97,7 +98,7 @@ export function Users() {
     };
 
     fetchData();
-  }, [page, rowsPerPage, searchValue, dataRefresh]);
+  }, [page, rowsPerPage, searchValue, dataRefresh, hasRole]);
 
   return (
     <>
@@ -214,7 +215,7 @@ export function Users() {
                                     size="small"
                                     onClick={() => handleUpdate(user)}
                                     disabled={
-                                      !hasRole("ADMIN") && !user.isActive
+                                      !hasRole(ROLES.ADMIN) && !user.isActive
                                     }
                                   >
                                     <EditIcon />
@@ -224,7 +225,7 @@ export function Users() {
                                   <IconButton
                                     size="small"
                                     onClick={() => handleOpenDelete(user)}
-                                    disabled={!hasRole("ADMIN")}
+                                    disabled={!hasRole(ROLES.ADMIN)}
                                   >
                                     <DeleteOutlineIcon />
                                   </IconButton>
