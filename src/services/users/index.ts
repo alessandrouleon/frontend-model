@@ -14,6 +14,7 @@ export const updateUser = async (id: string, data: IUpdateUsersProps) => {
     username: data.username.trim(),
     email: data.email.trim(),
     roles: data.roles.map((role) => role.trim()),
+    isActive: data.isActive,
   });
 };
 

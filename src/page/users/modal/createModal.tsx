@@ -4,13 +4,17 @@ import {
   Button,
   CircularProgress,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   Grid,
   IconButton,
   InputAdornment,
   InputLabel,
   MenuItem,
   Select,
+  Switch,
   TextField,
+  Typography,
 } from "@mui/material";
 import axios from "axios";
 import { useState } from "react";
@@ -19,7 +23,7 @@ import { useForm } from "react-hook-form";
 import DialogContainer from "../../../components/dialog";
 import type { ICreateModalProps } from "../../../components/dialog/styles";
 import { createUser } from "../../../services/users";
-import { listRoles } from "../../../utils/helps";
+import { listPermision } from "../../../utils/helps";
 import type { IFormCreateUsers } from "../interfaces";
 import { FormModal } from "../styles";
 
@@ -29,6 +33,7 @@ const defaultValues = {
   password: "",
   email: "",
   roles: [],
+  isActive: true,
 };
 
 export function CreateModal({
@@ -39,14 +44,18 @@ export function CreateModal({
   dataRefresh,
   setPage,
 }: ICreateModalProps) {
-  // const [employees, setEmployees] = useState<EmployeeProps[]>([]);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSwitchChecked, setIsSwitchChecked] = useState(true);
+
+  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSwitchChecked(event.target.checked);
+  };
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault();
   };
@@ -64,12 +73,13 @@ export function CreateModal({
     setOpen(false);
   };
 
-
   const onSubmit: SubmitHandler<IFormCreateUsers> = async (data) => {
     setLoading(true);
     try {
       const response = await createUser({
         ...data,
+        roles: Array.isArray(data.roles) ? data.roles : [data.roles],
+        isActive: isSwitchChecked,
       });
       if (response.status === 201) {
         setPage(0);
@@ -104,63 +114,37 @@ export function CreateModal({
     >
       <FormModal onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={2}>
-          {/*  */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField
+              id="name"
+              label="Nome"
+              placeholder="Digite o nome..."
+              size="small"
+              fullWidth
+              {...register("name", {
+                required: {
+                  value: true,
+                  message: "🛈 Campo é obrigatório.",
+                },
+                maxLength: {
+                  value: 50,
+                  message: "🛈 Campo excedeu o limite de caracters.",
+                },
+                minLength: {
+                  value: 3,
+                  message: "🛈 Campo tem menos de 3 caracters.",
+                },
+              })}
+              error={!!errors?.name}
+              helperText={errors?.name ? errors?.name.message : null}
+            />
+          </Grid>
 
-          {/* <Grid item xs={12}>
-            <FormControl fullWidth size="small">
-              <InputLabel id="employeeId">Funcionário</InputLabel>
-              <Select
-                labelId="employeeId"
-                id="employeeId"
-                label="Funcionário"
-                MenuProps={MenuProps}
-                {...register("employeeId", {
-                  required: {
-                    value: true,
-                    message: "🛈 Campo é obrigatório.",
-                  },
-                  minLength: {
-                    value: 3,
-                    message: "🛈 Campo tem menos de 3 caracters.",
-                  },
-                  maxLength: {
-                    value: 100,
-                    message: "🛈 Campo excedeu o limite de 100 caracteres.",
-                  },
-                })}
-                error={!!errors?.employeeId}
-                defaultValue={
-                  errors?.employeeId ? errors?.employeeId.message : null
-                }
-              >
-                <MenuItem value="">
-                  <em>Selecione o funcionário</em>
-                </MenuItem>
-                {employees.map((employee) => (
-                  <MenuItem key={employee.id} value={employee.id}>
-                    {employee.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {errors.employeeId && (
-                <p
-                  style={{
-                    color: "red",
-                    fontSize: "0.7rem",
-                    marginLeft: "1rem",
-                    marginTop: "0.2rem",
-                  }}
-                >
-                  {errors.employeeId.message}
-                </p>
-              )}
-            </FormControl>
-          </Grid> */}
-          <Grid size={{ xs: 12, md: 6 }} >
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               id="username"
               label="Usuário"
-              placeholder="Digite seu usuário..."
+              placeholder="Digite nome de usuário..."
               size="small"
               fullWidth
               {...register("username", {
@@ -181,6 +165,33 @@ export function CreateModal({
               helperText={errors?.username ? errors?.username.message : null}
             />
           </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField
+              id="email"
+              label="Email"
+              placeholder="Digite o email..."
+              size="small"
+              fullWidth
+              {...register("email", {
+                required: {
+                  value: true,
+                  message: "🛈 Campo é obrigatório.",
+                },
+                maxLength: {
+                  value: 50,
+                  message: "🛈 Campo excedeu o limite de caracters.",
+                },
+                minLength: {
+                  value: 3,
+                  message: "🛈 Campo tem menos de 3 caracters.",
+                },
+              })}
+              error={!!errors?.email}
+              helperText={errors?.email ? errors?.email.message : null}
+            />
+          </Grid>
+
           <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               id="password-id"
@@ -223,6 +234,7 @@ export function CreateModal({
               helperText={errors?.password ? errors?.password.message : null}
             />
           </Grid>
+
           <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth size="small">
               <InputLabel id="rolesId">Permissão</InputLabel>
@@ -230,27 +242,17 @@ export function CreateModal({
                 labelId="rolesId"
                 id="rolesId"
                 label="Permissão"
+                multiple
                 {...register("roles", {
                   required: {
                     value: true,
                     message: "🛈 Campo é obrigatório.",
                   },
-                  minLength: {
-                    value: 3,
-                    message: "🛈 Campo tem menos de 3 caracters.",
-                  },
-                  maxLength: {
-                    value: 50,
-                    message: "🛈 Campo excedeu o limite de 50 caracteres.",
-                  },
                 })}
                 error={!!errors?.roles}
-                defaultValue={errors?.roles ? errors?.roles.message : null}
+                defaultValue={[]}
               >
-                <MenuItem value="">
-                  <em>Selecione item</em>
-                </MenuItem>
-                {listRoles.map((item) => (
+                {listPermision.map((item) => (
                   <MenuItem key={item.name} value={item.name}>
                     {item.name}
                   </MenuItem>
@@ -270,33 +272,45 @@ export function CreateModal({
               )}
             </FormControl>
           </Grid>
-          {/* <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              id="status"
-              label="Status"
-              type="text"
-              variant="outlined"
-              fullWidth
-              size="small"
-              disabled
-              {...register("status", {
-                required: {
-                  value: true,
-                  message: "🛈 Campo é obrigatório.",
-                },
-                minLength: {
-                  value: 3,
-                  message: "🛈 Campo tem menos de 3 caracters.",
-                },
-                maxLength: {
-                  value: 150,
-                  message: "🛈 Campo excedeu o limite de 150 caracteres.",
-                },
-              })}
-              error={!!errors?.status}
-              helperText={errors?.status ? errors?.status.message : null}
-            />
-          </Grid> */}
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Typography
+              sx={{ fontSize: 14 }}
+              color="text.secondary"
+              gutterBottom
+            >
+              <Box
+                display="flex"
+                justifyContent="start"
+                alignItems="start"
+                marginLeft={1}
+              >
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: 16,
+                  }}
+                ></Typography>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={isSwitchChecked}
+                        onChange={handleSwitchChange}
+                      />
+                    }
+                    label={
+                      isSwitchChecked ? (
+                        <strong>Usuário ativo</strong>
+                      ) : (
+                        "Usuário inativo"
+                      )
+                    }
+                  />
+                </FormGroup>
+              </Box>
+            </Typography>
+          </Grid>
         </Grid>
         <Box
           style={{

@@ -5,7 +5,6 @@ export interface IUsersProps {
   password?: string;
   email: string;
   roles: string[];
-  status: string;
   isActive: boolean;
   actions?: React.ReactNode;
   createdAt: string;

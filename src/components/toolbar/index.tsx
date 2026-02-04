@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useCallback, useEffect } from "react";
-import { ROLES } from "../../contexts/hooks/enums/roles.enums";
+import { ROLES } from "../../contexts/hooks/roles";
 import { useAuth } from "../../contexts/hooks/useAuth";
 import { COLORS } from "../../themes/colors";
 

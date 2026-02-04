@@ -4,7 +4,7 @@ import { createContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { UserToken } from "../services/localStorage";
 import { signOut } from "./Auth";
-import { ROLES, type Roles } from "./hooks/enums/roles.enums";
+import { ROLES, type Roles } from "./hooks/roles";
 
 export interface AuthContextData {
   signed: boolean;

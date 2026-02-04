@@ -13,7 +13,7 @@ import { Alert } from "../../components/alert";
 import { InitialAlertProps } from "../../components/alert/interfaces";
 import { Loader } from "../../components/loader";
 import { Toolbar } from "../../components/toolbar";
-import { ROLES } from "../../contexts/hooks/enums/roles.enums";
+import { ROLES } from "../../contexts/hooks/roles";
 import { useAuth } from "../../contexts/hooks/useAuth";
 import { findManyUsers } from "../../services/users";
 import { COLORS } from "../../themes/colors";
