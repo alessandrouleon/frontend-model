@@ -6,6 +6,7 @@ import {
   FormControl,
   FormControlLabel,
   FormGroup,
+  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
@@ -19,34 +20,29 @@ import {
 import axios from "axios";
 import { useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import DialogContainer from "../../../components/dialog";
-import type { ICreateModalProps } from "../../../components/dialog/styles";
-import { createUser } from "../../../services/users";
+import { createUser, updateUser } from "../../../services/users";
 import { listPermision } from "../../../utils/helps";
-import type { IFormCreateUsers } from "../interfaces";
+import type { ICreateUpdateModalProps, IFormCreateUsers } from "../interfaces";
 import { FormModal } from "../styles";
 
-const defaultValues = {
-  name: "",
-  username: "",
-  password: "",
-  email: "",
-  roles: [],
-  isActive: true,
-};
-
-export function CreateModal({
+export function CreateUpdateModal({
   open,
   setOpen,
   setAlert,
   setDataRefresh,
   dataRefresh,
   setPage,
-}: ICreateModalProps) {
+  user = null,
+}: ICreateUpdateModalProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isSwitchChecked, setIsSwitchChecked] = useState(true);
+  const isEditing = !!user; //Verifica se é edição
+
+  const [isSwitchChecked, setIsSwitchChecked] = useState(
+    user?.isActive ?? true,
+  );
 
   const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsSwitchChecked(event.target.checked);
@@ -65,8 +61,21 @@ export function CreateModal({
     handleSubmit,
     formState: { errors },
     reset,
+    control,
   } = useForm<IFormCreateUsers>({
-    defaultValues,
+    defaultValues: user
+      ? {
+          ...user,
+          roles: Array.isArray(user.roles) ? user.roles : [],
+        }
+      : {
+          name: "",
+          username: "",
+          password: "",
+          email: "",
+          roles: [],
+          isActive: true,
+        },
   });
 
   const handleClose = () => {
@@ -76,19 +85,35 @@ export function CreateModal({
   const onSubmit: SubmitHandler<IFormCreateUsers> = async (data) => {
     setLoading(true);
     try {
-      const response = await createUser({
-        ...data,
-        roles: Array.isArray(data.roles) ? data.roles : [data.roles],
-        isActive: isSwitchChecked,
-      });
-      if (response.status === 201) {
+      let response;
+
+      if (isEditing) {
+        // Edição
+        response = await updateUser(user.id, {
+          ...data,
+          roles: Array.isArray(data.roles) ? data.roles : [data.roles],
+          isActive: isSwitchChecked,
+          password: data.password?.trim() ?? null,
+        });
+      } else {
+        // Criação
+        response = await createUser({
+          ...data,
+          roles: Array.isArray(data.roles) ? data.roles : [data.roles],
+          isActive: isSwitchChecked,
+        });
+      }
+
+      if (response.status === 200 || response.status === 201) {
         setPage(0);
         setDataRefresh(!dataRefresh);
         setOpen(false);
         reset();
         setAlert({
           open: true,
-          message: "Usuário cadastrado com sucesso.",
+          message: isEditing
+            ? "Usuário atualizado com sucesso."
+            : "Usuário cadastrado com sucesso.",
           type: "success",
         });
       }
@@ -109,8 +134,12 @@ export function CreateModal({
   return (
     <DialogContainer
       open={open}
-      title="Cadastrar usuário"
-      subtitle="Preencha o formulário do usuário."
+      title={isEditing ? "Editar usuário" : "Cadastrar usuário"}
+      subtitle={
+        isEditing
+          ? "Atualize os dados do usuário."
+          : "Preencha o formulário do usuário."
+      }
     >
       <FormModal onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={2}>
@@ -196,7 +225,11 @@ export function CreateModal({
             <TextField
               id="password-id"
               label="Senha"
-              placeholder="Digite sua senha..."
+              placeholder={
+                isEditing
+                  ? "Deixe em branco para não alterar"
+                  : "Digite sua senha..."
+              }
               size="small"
               fullWidth
               type={showPassword ? "text" : "password"}
@@ -218,16 +251,29 @@ export function CreateModal({
               }}
               {...register("password", {
                 required: {
-                  value: true,
+                  value: !isEditing,
                   message: "🛈 Campo é obrigatório.",
                 },
                 maxLength: {
                   value: 50,
-                  message: "🛈 Campo excedeu o limite de caracters.",
+                  message: "🛈 Campo excedeu o limite de caracteres.",
                 },
                 minLength: {
                   value: 3,
-                  message: "🛈 Campo tem menos de 3 caracters.",
+                  message: "🛈 Campo tem menos de 3 caracteres.",
+                },
+                validate: {
+                  validLength: (value) => {
+                    if (
+                      isEditing &&
+                      value &&
+                      value.trim().length > 0 &&
+                      value.trim().length < 3
+                    ) {
+                      return "🛈 Campo tem menos de 3 caracteres.";
+                    }
+                    return true;
+                  },
                 },
               })}
               error={!!errors?.password}
@@ -236,45 +282,43 @@ export function CreateModal({
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <FormControl fullWidth size="small">
+            <FormControl fullWidth size="small" error={!!errors?.roles}>
               <InputLabel id="rolesId">Permissão</InputLabel>
-              <Select
-                labelId="rolesId"
-                id="rolesId"
-                label="Permissão"
-                multiple
-                {...register("roles", {
+              <Controller
+                name="roles"
+                control={control}
+                rules={{
                   required: {
                     value: true,
                     message: "🛈 Campo é obrigatório.",
                   },
-                })}
-                error={!!errors?.roles}
-                defaultValue={[]}
-              >
-                {listPermision.map((item) => (
-                  <MenuItem key={item.name} value={item.name}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
+                }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    labelId="rolesId"
+                    id="rolesId"
+                    label="Permissão"
+                    multiple
+                    value={field.value || []}
+                  >
+                    {listPermision.map((item) => (
+                      <MenuItem key={item.name} value={item.name}>
+                        {item.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                )}
+              />
               {errors.roles && (
-                <p
-                  style={{
-                    color: "red",
-                    fontSize: "0.7rem",
-                    marginLeft: "1rem",
-                    marginTop: "0.2rem",
-                  }}
-                >
-                  {errors.roles.message}
-                </p>
+                <FormHelperText error>{errors.roles.message}</FormHelperText>
               )}
             </FormControl>
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography
+              component="div"
               sx={{ fontSize: 14 }}
               color="text.secondary"
               gutterBottom
@@ -329,8 +373,10 @@ export function CreateModal({
             {loading ? (
               <>
                 <CircularProgress size={24} sx={{ mr: 1 }} />
-                Cadastrando...
+                {isEditing ? "Atualizando..." : "Cadastrando..."}
               </>
+            ) : isEditing ? (
+              "Atualizar"
             ) : (
               "Cadastrar"
             )}

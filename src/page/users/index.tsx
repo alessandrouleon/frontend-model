@@ -18,28 +18,28 @@ import { useAuth } from "../../contexts/hooks/useAuth";
 import { findManyUsers } from "../../services/users";
 import { COLORS } from "../../themes/colors";
 import type { IFormUpdateUsers } from "./interfaces";
-import { initialStateData, initialUsersUpdate } from "./interfaces";
-import { CreateModal } from "./modal/createModal";
+import { initialStateData } from "./interfaces";
+import { CreateUpdateModal } from "./modal/createUpdateModal";
 import { DeleteModal } from "./modal/deleteModal";
-import { UpdateModal } from "./modal/updateModal";
 import { columns } from "./table/columns";
 
 export function Users() {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [data, setData] = useState(initialStateData);
   const [open, setOpen] = useState(false);
   const [dataRefresh, setDataRefresh] = useState(false);
   const [alert, setAlert] = useState(InitialAlertProps);
-  const [user, setUser] = useState<IFormUpdateUsers>(initialUsersUpdate);
-  const [openUpdate, setOpenUpdate] = useState(false);
-
+  const [user, setUser] = useState<IFormUpdateUsers | null>(null);
   const [openDelete, setOpenDelete] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(true);
   const { hasRole } = useAuth();
 
-  const handleOpen = () => setOpen(!open);
+  const handleOpen = () => {
+    setUser(null);
+    setOpen(!open);
+  };
 
   const handleSearch = (value: string) => {
     handleSearchMeno(value);
@@ -51,7 +51,7 @@ export function Users() {
 
   const handleUpdate = (item: IFormUpdateUsers) => {
     setUser(item);
-    setOpenUpdate(!openUpdate);
+    setOpen(true);
   };
 
   const handleOpenDelete = (item: IFormUpdateUsers) => {
@@ -98,7 +98,7 @@ export function Users() {
     };
 
     fetchData();
-  }, [page, rowsPerPage, searchValue, dataRefresh, hasRole]);
+  }, [page, rowsPerPage, searchValue, dataRefresh]);
 
   return (
     <>
@@ -110,30 +110,20 @@ export function Users() {
       />
 
       {open && (
-        <CreateModal
+        <CreateUpdateModal
           open={open}
           setOpen={setOpen}
           setPage={setPage}
           setDataRefresh={setDataRefresh}
           dataRefresh={dataRefresh}
           setAlert={setAlert}
-        />
-      )}
-
-      {openUpdate && (
-        <UpdateModal
           user={user}
-          open={openUpdate}
-          setOpen={setOpenUpdate}
-          setAlert={setAlert}
-          setDataRefresh={setDataRefresh}
-          dataRefresh={dataRefresh}
         />
       )}
 
       {openDelete && (
         <DeleteModal
-          user={user}
+          user={user!}
           open={openDelete}
           setOpen={setOpenDelete}
           setAlert={setAlert}

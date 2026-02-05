@@ -46,6 +46,9 @@ export const columns: readonly Column[] = [
     label: "Permição",
     minWidth: 50,
     align: "center",
+    renderCell: (params) => {
+      return params.row.roles.join(", ");
+    },
   },
   {
     id: "isActive",

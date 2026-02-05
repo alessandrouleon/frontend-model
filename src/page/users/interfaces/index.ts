@@ -53,19 +53,6 @@ export const initialUsersUpdate: IFormUpdateUsers = {
   isActive: false,
 };
 
-export interface IEditModalProps {
-  user: IFormUpdateUsers;
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  setAlert: (data: {
-    open: boolean;
-    message: string;
-    type: "error" | "success";
-  }) => void;
-  setDataRefresh: (refresh: boolean) => void;
-  dataRefresh: boolean;
-}
-
 export interface IDeleteModalProps {
   user: IFormUpdateUsers;
   open: boolean;
@@ -79,3 +66,13 @@ export interface IDeleteModalProps {
   dataRefresh: boolean;
 }
 
+
+export interface ICreateUpdateModalProps {
+  open: boolean;
+  setOpen: (value: boolean) => void;
+  setAlert: (alert: any) => void;
+  setDataRefresh: (value: boolean) => void;
+  dataRefresh: boolean;
+  setPage: (page: number) => void;
+  user?: IFormUpdateUsers | null;
+}

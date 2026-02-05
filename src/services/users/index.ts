@@ -1,18 +1,16 @@
 import api from "../api";
-import type {
-  ICreateUsersProps,
-  IUpdateUsersProps
-} from "./interfaces";
+import type { ICreateUpdateUsersProps } from "./interfaces";
 
-export const createUser = async (data: ICreateUsersProps) => {
+export const createUser = async (data: ICreateUpdateUsersProps) => {
   return await api.post(`/users/`, data);
 };
 
-export const updateUser = async (id: string, data: IUpdateUsersProps) => {
-  return await api.patch(`/users/${id}`, {
+export const updateUser = async (id: string, data: ICreateUpdateUsersProps) => {
+  return await api.put(`/users/${id}`, {
     name: data.name.trim(),
     username: data.username.trim(),
     email: data.email.trim(),
+    password: data.password?.trim() ? data.password.trim() : undefined,
     roles: data.roles.map((role) => role.trim()),
     isActive: data.isActive,
   });
