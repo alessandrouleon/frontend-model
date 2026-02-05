@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import axios from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as usersService from "../../../services/users";
-import { DeleteModal } from "../modal/deleteModal";
+import { DeleteModal } from "./deleteModal";
 // Mock do serviço
 vi.mock("../../../services/users", () => ({
   deleteUser: vi.fn(),
