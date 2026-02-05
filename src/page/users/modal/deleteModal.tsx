@@ -43,7 +43,7 @@ export function DeleteModal({
         });
       }
     }
-  }, []);
+  }, [user.id, dataRefresh, setDataRefresh, setOpen, setAlert]);
 
   return (
     <DialogContainer open={open} titleDelete="Deletar usuário" width="34rem">
